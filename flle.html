@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Для тебя</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+        body {
+            background:#0a0c14;
+            font-family: system-ui, sans-serif;
+            height:100vh;
+            overflow:hidden;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:white;
+        }
+        #canvas {
+            position:fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            z-index:1;
+        }
+        .glass-card {
+            z-index:2; 
+            position:relative;
+            width:90%; max-width:380px;
+            padding:45px 30px;
+            text-align:center;
+            
+            background: rgba(255, 255, 255, 0.018);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 28px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            
+            filter: contrast(1.25) brightness(1.15) saturate(1.3);
+        }
+        .btn-box { display:flex; gap:16px; justify-content:center; margin-top:30px; z-index: 10; position: relative; }
+        .btn {
+            padding:14px 36px;
+            font-size:1.1rem;
+            font-weight:600;
+            border-radius:16px;
+            cursor:pointer;
+            transition: 0.2s ease;
+            color: white;
+            z-index: 5;
+        }
+        .btn:active { transform: scale(0.95); }
+        
+        #yes-btn { background:rgba(0,230,100,0.25); border:1px solid #0f0; }
+        #no-btn  { background:rgba(255,60,60,0.25); border:1px solid #f44; }
+
+        .result-screen { display: none; flex-direction: column; align-items: center; }
+        .result-text {
+            font-size: 1.32rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 32px;
+        }
+        .tg-btn {
+            text-decoration: none;
+            padding: 16px 32px;
+            border-radius: 14px;
+            font-weight: 600;
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.3);
+            transition: 0.2s ease;
+        }
+        .tg-btn:active { transform: scale(0.95); }
+        
+        h1 { z-index: 10; position: relative; }
+    </style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="glass-card" id="main-card">
+    <h1>Пойдешь со мной на свидание?</h1>
+    <div class="btn-box" id="btn-box">
+        <button class="btn" id="yes-btn">Да</button>
+        <button class="btn" id="no-btn">Нет</button>
+    </div>
+</div>
+
+<div class="glass-card result-screen" id="happy-card">
+    <div class="result-text" style="color: #4ade80;"> Отлично!!</div>
+    <a href="https://t.me/TimInFov?text=%D0%AF%20%D1%81%D0%BE%D0%B3%D0%BB%D0%B0%D1%81%D0%BD%D0%B0!%20%D0%93%D0%B4%D0%B5%20%D0%BC%D0%BE%D0%B6%D0%B5%D0%BC%20%D0%B2%D1%81%D1%82%D1%80%D0%B5%D1%82%D0%B8%D1%82%D1%8C%D1%81%D1%8F%3F" class="tg-btn">
+        Мой ТГ
+    </a>
+</div>
+
+<div class="glass-card result-screen" id="sad-card">
+    <div class="result-text" style="color: #94a3b8; font-size: 1.15rem;">Оу... Жаль</div>
+    <a href="https://t.me/TimInFov?text=%D0%A1%D0%BF%D0%B0%D1%81%D0%B8%D0%B1%D0%BE%20%D0%B7%D0%B0%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BB%D0%BE%D0%B6%D0%B5%D0%BD%D0%B8%D0%B5%2C%20%D0%BD%D0%BE%20%D1%8F%20%D0%BF%D0%BE%D0%B6%D0%B0%D0%BB%D1%83%D0%B9%20%D0%BE%D1%82%D0%BA%D0%B0%D0%B6%D1%83%D1%81%D1%8C..." class="tg-btn">
+        сюда чтобы я знал
+        что ты выбрала
+    </a>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let w, h;
+
+function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Metaball {
+    constructor() {
+        this.x = Math.random() * w;
+        this.y = Math.random() * h * 0.7 + 100;
+        this.radius = 65 + Math.random() * 45;
+        this.vx = (Math.random() - 0.5) * 0.6;
+        this.vy = (Math.random() - 0.5) * 0.6 - 0.2;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 100 || this.x > w-100) this.vx *= -1;
+        if (this.y < 100 || this.y > h*0.85) this.vy *= -1;
+
+        this.vx += (Math.random() - 0.5) * 0.08;
+        this.vy += (Math.random() - 0.5) * 0.08;
+    }
+}
+
+const balls = Array.from({length: 5}, () => new Metaball());
+
+function animate() {
+    ctx.fillStyle = 'rgba(10,12,20,0.25)';
+    ctx.fillRect(0, 0, w, h);
+
+    const imgData = ctx.createImageData(w, h);
+    const data = imgData.data;
+
+    for (let x = 0; x < w; x += 3) {
+        for (let y = 0; y < h; y += 3) {
+            let sum = 0;
+            let r = 0, g = 0, b = 0;
+
+            balls.forEach(ball => {
+                const dx = x - ball.x;
+                const dy = y - ball.y;
+                const distSq = dx*dx + dy*dy;
+                const influence = (ball.radius * ball.radius) / (distSq + 1);
+                sum += influence;
+
+                if (influence > 0.01) {
+                    r += influence * 255 * 0.9;
+                    g += influence * 80;
+                    b += influence * 200;
+                }
+            });
+
+            if (sum > 0.6) {
+                const idx = (y * w + x) * 4;
+                data[idx]     = Math.min(255, r);
+                data[idx + 1] = Math.min(255, g);
+                data[idx + 2] = Math.min(255, b);
+                data[idx + 3] = Math.min(255, sum * 180);
+            }
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    balls.forEach(b => b.update());
+    requestAnimationFrame(animate);
+}
+
+animate();
+
+const noBtn = document.getElementById('no-btn');
+const yesBtn = document.getElementById('yes-btn');
+const mainCard = document.getElementById('main-card');
+
+// Логика кнопки "Нет" (сразу открывает грустную карточку)
+noBtn.addEventListener('click', () => {
+    mainCard.style.display = 'none';
+    document.getElementById('sad-card').style.display = 'flex';
+});
+
+// Логика кнопки "Да" (сразу открывает радостную карточку)
+yesBtn.addEventListener('click', () => {
+    mainCard.style.display = 'none';
+    document.getElementById('happy-card').style.display = 'flex';
+});
+</script>
+</body>
+</html>
